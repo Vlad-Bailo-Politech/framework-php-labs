@@ -3,3 +3,18 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+get_products:
+    path: /products
+    controller: App\Controller\ProductController::getProducts
+    methods: GET
+
+get_product_item:
+    path: /products/{id}
+    controller: App\Controller\ProductController::getProductItem
+    methods: GET
+
+create_product:
+    path: /products
+    controller: App\Controller\ProductController::createProduct
+    methods: POST
