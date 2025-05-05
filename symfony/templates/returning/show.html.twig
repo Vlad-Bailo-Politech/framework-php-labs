@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Returning{% endblock %}
+
+{% block body %}
+    <h1>Returning</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ returning.id }}</td>
+            </tr>
+            <tr>
+                <th>ReturnDate</th>
+                <td>{{ returning.returnDate ? returning.returnDate|date('Y-m-d') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_returning_index') }}">back to list</a>
+
+    <a href="{{ path('app_returning_edit', {'id': returning.id}) }}">edit</a>
+
+    {{ include('returning/_delete_form.html.twig') }}
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Returning{% endblock %}
+
+{% block body %}
+    <h1>Edit Returning</h1>
+
+    {{ include('returning/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_returning_index') }}">back to list</a>
+
+    {{ include('returning/_delete_form.html.twig') }}
+{% endblock %}
