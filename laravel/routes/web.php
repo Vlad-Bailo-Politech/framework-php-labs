@@ -10,6 +10,17 @@ use App\Http\Controllers\BookReturnController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\ReaderController;
 
+use App\Http\Controllers\AuthController;
+
+Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('auth:api')->group(function () {
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/refresh', [AuthController::class, 'refresh']);
+});
+
+
+
 Route::resource('books', BookController::class);
 Route::resource('loans', LoanController::class);
 Route::resource('book_returns', BookReturnController::class);
