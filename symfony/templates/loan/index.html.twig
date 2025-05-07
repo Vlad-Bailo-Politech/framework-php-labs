@@ -1,37 +1,73 @@
-{% extends 'base.html.twig' %}
+<div class="mb-4">
+    <a href="{{ path('app_author_index') }}" class="btn btn-outline-primary btn-sm">Автори</a>
+    <a href="{{ path('app_book_index') }}" class="btn btn-outline-primary btn-sm">Книги</a>
+    <a href="{{ path('app_reader_index') }}" class="btn btn-outline-primary btn-sm">Читачі</a>
+    <a href="{{ path('app_loan_index') }}" class="btn btn-outline-primary btn-sm">Позики</a>
+    <a href="{{ path('app_returning_index') }}" class="btn btn-outline-primary btn-sm active">Повернення</a>
+</div>
 
-{% block title %}Loan index{% endblock %}
+<h1>Видачі</h1>
 
-{% block body %}
-    <h1>Loan index</h1>
+<a href="{{ path('app_loan_new') }}" class="btn btn-primary mb-3">+ Нова видача</a>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>LoanDate</th>
-                <th>DueDate</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
+<form method="get" class="mb-3">
+    <select name="book">
+        <option value="">Всі книги</option>
+        {% for book in books %}
+            <option value="{{ book.id }}" {{ filters.book == book.id ? 'selected' : '' }}>
+                {{ book.title }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <select name="reader">
+        <option value="">Всі читачі</option>
+        {% for reader in readers %}
+            <option value="{{ reader.id }}" {{ filters.reader == reader.id ? 'selected' : '' }}>
+                {{ reader.name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <input type="number" name="itemsPerPage" value="{{ limit }}" min="1">
+    <button type="submit">Фільтрувати</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Книга</th>
+            <th>Читач</th>
+            <th>Дії</th>
+        </tr>
+    </thead>
+    <tbody>
         {% for loan in loans %}
             <tr>
-                <td>{{ loan.id }}</td>
-                <td>{{ loan.loanDate ? loan.loanDate|date('Y-m-d') : '' }}</td>
-                <td>{{ loan.dueDate ? loan.dueDate|date('Y-m-d') : '' }}</td>
+                <td>{{ loan.book.title }}</td>
+                <td>{{ loan.reader.name }}</td>
                 <td>
-                    <a href="{{ path('app_loan_show', {'id': loan.id}) }}">show</a>
-                    <a href="{{ path('app_loan_edit', {'id': loan.id}) }}">edit</a>
+                    <a href="{{ path('app_loan_edit', {id: loan.id}) }}">Редагувати</a>
+                    <form method="post" action="{{ path('app_loan_delete', {id: loan.id}) }}"
+                          style="display:inline;" onsubmit="return confirm('Ви впевнені?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ loan.id) }}">
+                        <button class="btn btn-sm btn-danger">Видалити</button>
+                    </form>
                 </td>
             </tr>
         {% else %}
-            <tr>
-                <td colspan="4">no records found</td>
-            </tr>
+            <tr><td colspan="3">Записів не знайдено.</td></tr>
         {% endfor %}
-        </tbody>
-    </table>
+    </tbody>
+</table>
 
-    <a href="{{ path('app_loan_new') }}">Create new</a>
-{% endblock %}
+<div class="pagination">
+    {% set queryParams = app.request.query.all %}
+    {% if page > 1 %}
+        <a href="?{{ queryParams | merge({'page': page - 1}) | url_encode }}">← Попередня</a>
+    {% endif %}
+    <span>Сторінка {{ page }}</span>
+    {% if loans|length == limit %}
+        <a href="?{{ queryParams | merge({'page': page + 1}) | url_encode }}">Наступна →</a>
+    {% endif %}
+</div>

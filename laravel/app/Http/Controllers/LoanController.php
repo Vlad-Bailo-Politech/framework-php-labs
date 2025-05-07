@@ -10,11 +10,32 @@ use Illuminate\Http\Request;
 class LoanController extends Controller
 {
     // Список всіх позик
-    public function index()
+    public function index(Request $request)
     {
-        $loans = Loan::with(['book', 'reader', 'bookReturn'])->get();
-        //return response()->json($loans);
-        return view('loans.index', compact('loans'));
+        $query = Loan::with(['book', 'reader']);
+
+        // Фільтрація по даті позики
+        if ($request->filled('loan_date')) {
+            $query->whereDate('loan_date', $request->loan_date);
+        }
+
+        // Фільтрація по книзі
+        if ($request->filled('book_id')) {
+            $query->where('book_id', $request->book_id);
+        }
+
+        // Фільтрація по читачу
+        if ($request->filled('reader_id')) {
+            $query->where('reader_id', $request->reader_id);
+        }
+
+        $itemsPerPage = $request->input('itemsPerPage', 10);
+        $loans = $query->paginate($itemsPerPage)->withQueryString();
+
+        $books = Book::all();
+        $readers = Reader::all();
+
+        return view('loans.index', compact('loans', 'books', 'readers'));
     }
 
     // Форма створення (або повертає список книг та читачів для заповнення)
@@ -39,8 +60,8 @@ class LoanController extends Controller
 
         $loan = Loan::create($request->only('book_id', 'reader_id', 'loan_date', 'due_date'));
 
-        return response()->json(['message' => 'Позику створено', 'loan' => $loan], 201);
-        //return redirect()->route('loans.index')->with('success', 'Позика успішно створена');
+        //return response()->json(['message' => 'Позику створено', 'loan' => $loan], 201);
+        return redirect()->route('loans.index')->with('success', 'Позика успішно створена');
     }
 
     // Перегляд однієї позики

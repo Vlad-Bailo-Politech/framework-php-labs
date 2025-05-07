@@ -8,10 +8,24 @@ use Illuminate\Http\Request;
 class ReaderController extends Controller
 {
     // Список всіх читачів
-    public function index()
+    public function index(Request $request)
     {
-        $readers = Reader::with('loans')->get();
-        //return response()->json($readers);
+        $query = Reader::query();
+
+        // Фільтрація по імені
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        // Фільтрація по email
+        if ($request->filled('email')) {
+            $query->where('email', 'like', '%' . $request->email . '%');
+        }
+
+        // Кількість елементів на сторінці
+        $itemsPerPage = $request->input('itemsPerPage', 10);
+        $readers = $query->paginate($itemsPerPage)->withQueryString();
+
         return view('readers.index', compact('readers'));
     }
 
@@ -32,8 +46,8 @@ class ReaderController extends Controller
 
         $reader = Reader::create($request->only('name', 'email'));
 
-        return response()->json(['message' => 'Читача створено', 'reader' => $reader], 201);
-        //return redirect()->route('readers.index')->with('success', 'Читача успішно створено');
+        //return response()->json(['message' => 'Читача створено', 'reader' => $reader], 201);
+        return redirect()->route('readers.index')->with('success', 'Читача успішно створено');
     }
 
     // Перегляд конкретного читача

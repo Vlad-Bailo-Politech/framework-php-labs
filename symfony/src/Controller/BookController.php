@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Book;
 use App\Form\BookForm;
 use App\Repository\BookRepository;
+use App\Repository\AuthorRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,10 +16,29 @@ use Symfony\Component\Routing\Attribute\Route;
 final class BookController extends AbstractController
 {
     #[Route(name: 'app_book_index', methods: ['GET'])]
-    public function index(BookRepository $bookRepository): Response
-    {
+    public function index(
+        Request $request,
+        BookRepository $bookRepository,
+        AuthorRepository $authorRepository
+    ): Response {
+        $filters = [
+            'title' => $request->query->get('title'),
+            'author' => $request->query->get('author'),
+        ];
+
+        $limit = (int) $request->query->get('itemsPerPage', 10);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $offset = ($page - 1) * $limit;
+
+        $books = $bookRepository->findByFilters($filters, $limit, $offset);
+        $authors = $authorRepository->findAll();
+
         return $this->render('book/index.html.twig', [
-            'books' => $bookRepository->findAll(),
+            'books' => $books,
+            'filters' => $filters,
+            'authors' => $authors,
+            'limit' => $limit,
+            'page' => $page,
         ]);
     }
 
@@ -71,7 +91,7 @@ final class BookController extends AbstractController
     #[Route('/{id}', name: 'app_book_delete', methods: ['POST'])]
     public function delete(Request $request, Book $book, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$book->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $book->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($book);
             $entityManager->flush();
         }

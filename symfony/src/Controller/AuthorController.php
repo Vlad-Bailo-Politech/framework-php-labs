@@ -15,10 +15,23 @@ use Symfony\Component\Routing\Attribute\Route;
 final class AuthorController extends AbstractController
 {
     #[Route(name: 'app_author_index', methods: ['GET'])]
-    public function index(AuthorRepository $authorRepository): Response
+    public function index(Request $request, AuthorRepository $authorRepository): Response
     {
+        $filters = [
+            'name' => $request->query->get('name'),
+        ];
+
+        $limit = (int) $request->query->get('itemsPerPage', 10);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $offset = ($page - 1) * $limit;
+
+        $authors = $authorRepository->findByFilters($filters, $limit, $offset);
+
         return $this->render('author/index.html.twig', [
-            'authors' => $authorRepository->findAll(),
+            'authors' => $authors,
+            'filters' => $filters,
+            'limit' => $limit,
+            'page' => $page,
         ]);
     }
 
@@ -71,7 +84,7 @@ final class AuthorController extends AbstractController
     #[Route('/{id}', name: 'app_author_delete', methods: ['POST'])]
     public function delete(Request $request, Author $author, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$author->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $author->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($author);
             $entityManager->flush();
         }

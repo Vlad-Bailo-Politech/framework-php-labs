@@ -1,39 +1,64 @@
-{% extends 'base.html.twig' %}
+<div class="mb-4">
+    <a href="{{ path('app_author_index') }}" class="btn btn-outline-primary btn-sm">Автори</a>
+    <a href="{{ path('app_book_index') }}" class="btn btn-outline-primary btn-sm">Книги</a>
+    <a href="{{ path('app_reader_index') }}" class="btn btn-outline-primary btn-sm">Читачі</a>
+    <a href="{{ path('app_loan_index') }}" class="btn btn-outline-primary btn-sm">Позики</a>
+    <a href="{{ path('app_returning_index') }}" class="btn btn-outline-primary btn-sm active">Повернення</a>
+</div>
 
-{% block title %}Reader index{% endblock %}
+<h1>Читачі</h1>
 
-{% block body %}
-    <h1>Reader index</h1>
+<a href="{{ path('app_reader_new') }}" class="btn btn-primary mb-3">+ Новий читач</a>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
+<form method="get" class="mb-3">
+    <input type="text" name="name" value="{{ filters.name ?? '' }}" placeholder="Ім'я">
+    <input type="text" name="email" value="{{ filters.email ?? '' }}" placeholder="Email">
+    <input type="number" name="itemsPerPage" value="{{ limit }}" min="1">
+    <button type="submit">Фільтрувати</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Ім'я</th>
+            <th>Email</th>
+            <th>Дії</th>
+        </tr>
+    </thead>
+    <tbody>
         {% for reader in readers %}
             <tr>
-                <td>{{ reader.id }}</td>
                 <td>{{ reader.name }}</td>
                 <td>{{ reader.email }}</td>
-                <td>{{ reader.phone }}</td>
                 <td>
-                    <a href="{{ path('app_reader_show', {'id': reader.id}) }}">show</a>
-                    <a href="{{ path('app_reader_edit', {'id': reader.id}) }}">edit</a>
+                    <a href="{{ path('app_reader_edit', {id: reader.id}) }}">Редагувати</a>
+                    <form method="post" action="{{ path('app_reader_delete', {id: reader.id}) }}"
+                          style="display:inline;" onsubmit="return confirm('Ви впевнені?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ reader.id) }}">
+                        <button class="btn btn-sm btn-danger">Видалити</button>
+                    </form>
                 </td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="5">no records found</td>
+                <td colspan="3">Читачів не знайдено.</td>
             </tr>
         {% endfor %}
-        </tbody>
-    </table>
+    </tbody>
+</table>
 
-    <a href="{{ path('app_reader_new') }}">Create new</a>
-{% endblock %}
+<div class="pagination">
+    {% set queryParams = app.request.query.all %}
+
+    {% if page > 1 %}
+        {% set prevQuery = queryParams | merge({'page': page - 1}) %}
+        <a href="?{{ prevQuery | url_encode }}">← Попередня</a>
+    {% endif %}
+
+    <span>Сторінка {{ page }}</span>
+
+    {% if readers|length == limit %}
+        {% set nextQuery = queryParams | merge({'page': page + 1}) %}
+        <a href="?{{ nextQuery | url_encode }}">Наступна →</a>
+    {% endif %}
+</div>

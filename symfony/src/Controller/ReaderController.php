@@ -15,10 +15,24 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ReaderController extends AbstractController
 {
     #[Route(name: 'app_reader_index', methods: ['GET'])]
-    public function index(ReaderRepository $readerRepository): Response
+    public function index(Request $request, ReaderRepository $readerRepository): Response
     {
+        $filters = [
+            'name' => $request->query->get('name'),
+            'email' => $request->query->get('email'),
+        ];
+
+        $limit = (int) $request->query->get('itemsPerPage', 10);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $offset = ($page - 1) * $limit;
+
+        $readers = $readerRepository->findByFilters($filters, $limit, $offset);
+
         return $this->render('reader/index.html.twig', [
-            'readers' => $readerRepository->findAll(),
+            'readers' => $readers,
+            'filters' => $filters,
+            'limit' => $limit,
+            'page' => $page,
         ]);
     }
 
@@ -71,7 +85,7 @@ final class ReaderController extends AbstractController
     #[Route('/{id}', name: 'app_reader_delete', methods: ['POST'])]
     public function delete(Request $request, Reader $reader, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$reader->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $reader->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($reader);
             $entityManager->flush();
         }

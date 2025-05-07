@@ -8,10 +8,19 @@ use Illuminate\Http\Request;
 class AuthorController extends Controller
 {
     // Список авторів
-    public function index()
+    public function index(Request $request)
     {
-        $authors = Author::with('books')->get();
-        //return response()->json($authors);
+        $query = Author::query();
+
+        // Фільтрація по імені
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        // Кількість елементів на сторінці (пагінація)
+        $itemsPerPage = $request->input('itemsPerPage', 10);
+        $authors = $query->paginate($itemsPerPage)->withQueryString();
+
         return view('authors.index', compact('authors'));
     }
 
@@ -30,8 +39,8 @@ class AuthorController extends Controller
         ]);
 
         $author = Author::create($request->only('name'));
-        return response()->json(['message' => 'Автора створено', 'author' => $author], 201);
-        //return redirect()->route('authors.index')->with('success', 'Автора створено');
+        //return response()->json(['message' => 'Автора створено', 'author' => $author], 201);
+        return redirect()->route('authors.index')->with('success', 'Автора створено');
     }
 
     // Перегляд автора

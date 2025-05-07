@@ -16,6 +16,23 @@ class ReturningRepository extends ServiceEntityRepository
         parent::__construct($registry, Returning::class);
     }
 
+    public function findByFilters(array $filters, int $limit = 10, int $offset = 0): array
+    {
+        $qb = $this->createQueryBuilder('r')
+            ->leftJoin('r.loan', 'l')
+            ->addSelect('l');
+
+        if (!empty($filters['loan'])) {
+            $qb->andWhere('r.loan = :loan')
+                ->setParameter('loan', $filters['loan']);
+        }
+
+        return $qb->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Returning[] Returns an array of Returning objects
     //     */

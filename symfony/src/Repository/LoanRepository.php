@@ -16,6 +16,30 @@ class LoanRepository extends ServiceEntityRepository
         parent::__construct($registry, Loan::class);
     }
 
+    public function findByFilters(array $filters, int $limit = 10, int $offset = 0): array
+    {
+        $qb = $this->createQueryBuilder('l')
+            ->leftJoin('l.book', 'b')
+            ->addSelect('b')
+            ->leftJoin('l.reader', 'r')
+            ->addSelect('r');
+
+        if (!empty($filters['book'])) {
+            $qb->andWhere('l.book = :book')
+                ->setParameter('book', $filters['book']);
+        }
+
+        if (!empty($filters['reader'])) {
+            $qb->andWhere('l.reader = :reader')
+                ->setParameter('reader', $filters['reader']);
+        }
+
+        return $qb->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Loan[] Returns an array of Loan objects
     //     */

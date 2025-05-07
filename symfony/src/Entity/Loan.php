@@ -16,9 +16,6 @@ class Loan
     #[ORM\Column(type: 'date')]
     private ?\DateTimeInterface $loanDate = null;
 
-    #[ORM\Column(type: 'date')]
-    private ?\DateTimeInterface $dueDate = null;
-
     #[ORM\ManyToOne(inversedBy: 'loans')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Book $book = null;
@@ -43,17 +40,6 @@ class Loan
     public function setLoanDate(\DateTimeInterface $loanDate): self
     {
         $this->loanDate = $loanDate;
-        return $this;
-    }
-
-    public function getDueDate(): ?\DateTimeInterface
-    {
-        return $this->dueDate;
-    }
-
-    public function setDueDate(\DateTimeInterface $dueDate): self
-    {
-        $this->dueDate = $dueDate;
         return $this;
     }
 

@@ -9,12 +9,30 @@ use Illuminate\Http\Request;
 class BookController extends Controller
 {
     // Вивід списку книг
-    public function index()
+    public function index(Request $request)
     {
-        $books = Book::with('author')->get();
-        //return response()->json($books);
-        return view('books.index', compact('books'));
+        $query = Book::with('author');
+
+        // Фільтрація за назвою книги
+        if ($request->filled('title')) {
+            $query->where('title', 'like', '%' . $request->title . '%');
+        }
+
+        // Фільтрація за автором
+        if ($request->filled('author_id')) {
+            $query->where('author_id', $request->author_id);
+        }
+
+        // Пагінація з можливістю змінювати кількість елементів на сторінці
+        $perPage = $request->input('itemsPerPage', 10); // 10 за замовчуванням
+        $books = $query->paginate($perPage)->appends($request->query());
+
+        // Список авторів для фільтру у blade-шаблоні
+        $authors = Author::all();
+
+        return view('books.index', compact('books', 'authors'));
     }
+
 
     // Показ форми для створення (якщо робите через blade — return view())
     public function create()

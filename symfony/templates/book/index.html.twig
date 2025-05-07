@@ -1,39 +1,73 @@
-{% extends 'base.html.twig' %}
+<div class="mb-4">
+    <a href="{{ path('app_author_index') }}" class="btn btn-outline-primary btn-sm">Автори</a>
+    <a href="{{ path('app_book_index') }}" class="btn btn-outline-primary btn-sm">Книги</a>
+    <a href="{{ path('app_reader_index') }}" class="btn btn-outline-primary btn-sm">Читачі</a>
+    <a href="{{ path('app_loan_index') }}" class="btn btn-outline-primary btn-sm">Позики</a>
+    <a href="{{ path('app_returning_index') }}" class="btn btn-outline-primary btn-sm active">Повернення</a>
+</div>
 
-{% block title %}Book index{% endblock %}
+<h1>Книги</h1>
 
-{% block body %}
-    <h1>Book index</h1>
+<a href="{{ path('app_book_new') }}" class="btn btn-primary mb-3">+ Нова книга</a>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Title</th>
-                <th>Isbn</th>
-                <th>PublishedAt</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
+<form method="get" class="mb-3">
+    <input type="text" name="title" value="{{ filters.title ?? '' }}" placeholder="Назва книги">
+
+    <select name="author">
+        <option value="">Всі автори</option>
+        {% for author in authors %}
+            <option value="{{ author.id }}" {{ filters.author == author.id ? 'selected' : '' }}>
+                {{ author.name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <input type="number" name="itemsPerPage" value="{{ limit }}" min="1">
+    <button type="submit">Фільтрувати</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Назва</th>
+            <th>Автор</th>
+            <th>Дії</th>
+        </tr>
+    </thead>
+    <tbody>
         {% for book in books %}
             <tr>
-                <td>{{ book.id }}</td>
                 <td>{{ book.title }}</td>
-                <td>{{ book.isbn }}</td>
-                <td>{{ book.publishedAt ? book.publishedAt|date('Y-m-d') : '' }}</td>
+                <td>{{ book.author.name }}</td>
                 <td>
-                    <a href="{{ path('app_book_show', {'id': book.id}) }}">show</a>
-                    <a href="{{ path('app_book_edit', {'id': book.id}) }}">edit</a>
+                    <a href="{{ path('app_book_edit', {id: book.id}) }}">Редагувати</a>
+                    <form method="post" action="{{ path('app_book_delete', {id: book.id}) }}"
+                          style="display:inline;" onsubmit="return confirm('Ви впевнені?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ book.id) }}">
+                        <button class="btn btn-sm btn-danger">Видалити</button>
+                    </form>
                 </td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="5">no records found</td>
+                <td colspan="3">Книг не знайдено.</td>
             </tr>
         {% endfor %}
-        </tbody>
-    </table>
+    </tbody>
+</table>
 
-    <a href="{{ path('app_book_new') }}">Create new</a>
-{% endblock %}
+<div class="pagination">
+    {% set queryParams = app.request.query.all %}
+
+    {% if page > 1 %}
+        {% set prevQuery = queryParams | merge({'page': page - 1}) %}
+        <a href="?{{ prevQuery | url_encode }}">← Попередня</a>
+    {% endif %}
+
+    <span>Сторінка {{ page }}</span>
+
+    {% if books|length == limit %}
+        {% set nextQuery = queryParams | merge({'page': page + 1}) %}
+        <a href="?{{ nextQuery | url_encode }}">Наступна →</a>
+    {% endif %}
+</div>

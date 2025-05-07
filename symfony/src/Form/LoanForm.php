@@ -17,7 +17,6 @@ class LoanForm extends AbstractType
     {
         $builder
             ->add('loanDate')
-            ->add('dueDate')
             ->add('book', EntityType::class, [
                 'class' => Book::class,
                 'choice_label' => 'id',

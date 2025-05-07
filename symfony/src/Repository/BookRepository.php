@@ -16,6 +16,28 @@ class BookRepository extends ServiceEntityRepository
         parent::__construct($registry, Book::class);
     }
 
+    public function findByFilters(array $filters, int $limit = 10, int $offset = 0): array
+    {
+        $qb = $this->createQueryBuilder('b')
+            ->leftJoin('b.author', 'a')
+            ->addSelect('a');
+
+        if (!empty($filters['title'])) {
+            $qb->andWhere('b.title LIKE :title')
+                ->setParameter('title', '%' . $filters['title'] . '%');
+        }
+
+        if (!empty($filters['author'])) {
+            $qb->andWhere('b.author = :author')
+                ->setParameter('author', $filters['author']);
+        }
+
+        return $qb->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Book[] Returns an array of Book objects
     //     */

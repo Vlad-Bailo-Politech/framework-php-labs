@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Loan;
 use App\Form\LoanForm;
 use App\Repository\LoanRepository;
+use App\Repository\BookRepository;
+use App\Repository\ReaderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,10 +17,28 @@ use Symfony\Component\Routing\Attribute\Route;
 final class LoanController extends AbstractController
 {
     #[Route(name: 'app_loan_index', methods: ['GET'])]
-    public function index(LoanRepository $loanRepository): Response
-    {
+    public function index(
+        Request $request,
+        LoanRepository $loanRepository,
+        BookRepository $bookRepository,
+        ReaderRepository $readerRepository
+    ): Response {
+        $filters = [
+            'book' => $request->query->get('book'),
+            'reader' => $request->query->get('reader'),
+        ];
+
+        $limit = (int) $request->query->get('itemsPerPage', 10);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $offset = ($page - 1) * $limit;
+
         return $this->render('loan/index.html.twig', [
-            'loans' => $loanRepository->findAll(),
+            'loans' => $loanRepository->findByFilters($filters, $limit, $offset),
+            'filters' => $filters,
+            'books' => $bookRepository->findAll(),
+            'readers' => $readerRepository->findAll(),
+            'limit' => $limit,
+            'page' => $page,
         ]);
     }
 
@@ -71,7 +91,7 @@ final class LoanController extends AbstractController
     #[Route('/{id}', name: 'app_loan_delete', methods: ['POST'])]
     public function delete(Request $request, Loan $loan, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$loan->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $loan->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($loan);
             $entityManager->flush();
         }

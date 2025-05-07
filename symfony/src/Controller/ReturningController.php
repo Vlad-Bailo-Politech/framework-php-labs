@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Returning;
 use App\Form\ReturningForm;
-use App\Repository\BookReturnRepository;
+use App\Repository\ReturningRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,10 +15,23 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ReturningController extends AbstractController
 {
     #[Route(name: 'app_returning_index', methods: ['GET'])]
-    public function index(BookReturnRepository $bookReturnRepository): Response
-    {
+    public function index(
+        Request $request,
+        ReturningRepository $bookReturnRepository
+    ): Response {
+        $filters = [
+            'loan' => $request->query->get('loan'),
+        ];
+
+        $limit = (int) $request->query->get('itemsPerPage', 10);
+        $page = max(1, (int) $request->query->get('page', 1));
+        $offset = ($page - 1) * $limit;
+
         return $this->render('returning/index.html.twig', [
-            'returnings' => $bookReturnRepository->findAll(),
+            'returnings' => $bookReturnRepository->findByFilters($filters, $limit, $offset),
+            'filters' => $filters,
+            'limit' => $limit,
+            'page' => $page,
         ]);
     }
 
@@ -71,7 +84,7 @@ final class ReturningController extends AbstractController
     #[Route('/{id}', name: 'app_returning_delete', methods: ['POST'])]
     public function delete(Request $request, Returning $returning, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$returning->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $returning->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($returning);
             $entityManager->flush();
         }

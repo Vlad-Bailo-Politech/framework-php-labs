@@ -16,6 +16,26 @@ class ReaderRepository extends ServiceEntityRepository
         parent::__construct($registry, Reader::class);
     }
 
+    public function findByFilters(array $filters, int $limit = 10, int $offset = 0): array
+    {
+        $qb = $this->createQueryBuilder('r');
+
+        if (!empty($filters['name'])) {
+            $qb->andWhere('r.name LIKE :name')
+                ->setParameter('name', '%' . $filters['name'] . '%');
+        }
+
+        if (!empty($filters['email'])) {
+            $qb->andWhere('r.email LIKE :email')
+                ->setParameter('email', '%' . $filters['email'] . '%');
+        }
+
+        return $qb->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return Reader[] Returns an array of Reader objects
     //     */

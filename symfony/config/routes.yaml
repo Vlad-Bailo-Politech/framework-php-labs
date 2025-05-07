@@ -18,3 +18,133 @@ create_product:
     path: /products
     controller: App\Controller\ProductController::createProduct
     methods: POST
+
+# # Authors
+# author_index:
+#     path: /authors
+#     controller: App\Controller\AuthorController::index
+#     methods: [GET]
+
+# author_show:
+#     path: /authors/{id}
+#     controller: App\Controller\AuthorController::show
+#     methods: [GET]
+
+# author_create:
+#     path: /authors
+#     controller: App\Controller\AuthorController::create
+#     methods: [POST]
+
+# author_update:
+#     path: /authors/{id}
+#     controller: App\Controller\AuthorController::update
+#     methods: [PUT, PATCH]
+
+# author_delete:
+#     path: /authors/{id}
+#     controller: App\Controller\AuthorController::delete
+#     methods: [DELETE]
+
+# # Books
+# book_index:
+#     path: /books
+#     controller: App\Controller\BookController::index
+#     methods: [GET]
+
+# book_show:
+#     path: /books/{id}
+#     controller: App\Controller\BookController::show
+#     methods: [GET]
+
+# book_create:
+#     path: /books
+#     controller: App\Controller\BookController::create
+#     methods: [POST]
+
+# book_update:
+#     path: /books/{id}
+#     controller: App\Controller\BookController::update
+#     methods: [PUT, PATCH]
+
+# book_delete:
+#     path: /books/{id}
+#     controller: App\Controller\BookController::delete
+#     methods: [DELETE]
+
+# # Loans
+# loan_index:
+#     path: /loans
+#     controller: App\Controller\LoanController::index
+#     methods: [GET]
+
+# loan_show:
+#     path: /loans/{id}
+#     controller: App\Controller\LoanController::show
+#     methods: [GET]
+
+# loan_create:
+#     path: /loans
+#     controller: App\Controller\LoanController::create
+#     methods: [POST]
+
+# loan_update:
+#     path: /loans/{id}
+#     controller: App\Controller\LoanController::update
+#     methods: [PUT, PATCH]
+
+# loan_delete:
+#     path: /loans/{id}
+#     controller: App\Controller\LoanController::delete
+#     methods: [DELETE]
+
+# # Readers
+# reader_index:
+#     path: /readers
+#     controller: App\Controller\ReaderController::index
+#     methods: [GET]
+
+# reader_show:
+#     path: /readers/{id}
+#     controller: App\Controller\ReaderController::show
+#     methods: [GET]
+
+# reader_create:
+#     path: /readers
+#     controller: App\Controller\ReaderController::create
+#     methods: [POST]
+
+# reader_update:
+#     path: /readers/{id}
+#     controller: App\Controller\ReaderController::update
+#     methods: [PUT, PATCH]
+
+# reader_delete:
+#     path: /readers/{id}
+#     controller: App\Controller\ReaderController::delete
+#     methods: [DELETE]
+
+# # Book Returns (ReturningController)
+# return_index:
+#     path: /returns
+#     controller: App\Controller\ReturningController::index
+#     methods: [GET]
+
+# return_show:
+#     path: /returns/{id}
+#     controller: App\Controller\ReturningController::show
+#     methods: [GET]
+
+# return_create:
+#     path: /returns
+#     controller: App\Controller\ReturningController::create
+#     methods: [POST]
+
+# return_update:
+#     path: /returns/{id}
+#     controller: App\Controller\ReturningController::update
+#     methods: [PUT, PATCH]
+
+# return_delete:
+#     path: /returns/{id}
+#     controller: App\Controller\ReturningController::delete
+#     methods: [DELETE]

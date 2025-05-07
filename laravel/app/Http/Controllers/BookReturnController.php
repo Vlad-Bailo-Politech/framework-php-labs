@@ -4,16 +4,40 @@ namespace App\Http\Controllers;
 
 use App\Models\BookReturn;
 use App\Models\Loan;
+use App\Models\Reader;
 use Illuminate\Http\Request;
 
 class BookReturnController extends Controller
 {
     // Список всіх повернень
-    public function index()
+    public function index(Request $request)
     {
-        $returns = BookReturn::with('loan')->get();
-        //return response()->json($returns);
-        return view('book_returns.index', compact('returns'));
+        $query = BookReturn::with(['loan.reader', 'loan.book']);
+
+        // Фільтрація по даті повернення
+        if ($request->filled('return_date')) {
+            $query->whereDate('return_date', $request->return_date);
+        }
+
+        // Фільтрація по позиченню (опціонально)
+        if ($request->filled('loan_id')) {
+            $query->where('loan_id', $request->loan_id);
+        }
+
+        // Фільтрація по читачу (через зв'язок з Loan)
+        if ($request->filled('reader_id')) {
+            $query->whereHas('loan.reader', function ($q) use ($request) {
+                $q->where('id', $request->reader_id);
+            });
+        }
+
+        $itemsPerPage = $request->input('itemsPerPage', 10);
+        $returns = $query->paginate($itemsPerPage)->withQueryString();
+
+        $loans = Loan::with(['reader', 'book'])->get();
+        $readers = Reader::all();
+
+        return view('book_returns.index', compact('returns', 'loans', 'readers'));
     }
 
     // Форма створення повернення
@@ -34,8 +58,8 @@ class BookReturnController extends Controller
         ]);
 
         $return = BookReturn::create($request->only('loan_id', 'return_date'));
-        return response()->json(['message' => 'Повернення зафіксовано', 'return' => $return], 201);
-        //return redirect()->route('book_returns.index')->with('success', 'Повернення книги успішно зафіксовано');
+        //return response()->json(['message' => 'Повернення зафіксовано', 'return' => $return], 201);
+        return redirect()->route('book_returns.index')->with('success', 'Повернення книги успішно зафіксовано');
     }
 
     // Перегляд повернення

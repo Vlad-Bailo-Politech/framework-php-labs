@@ -1,35 +1,62 @@
-{% extends 'base.html.twig' %}
+<div class="mb-4">
+    <a href="{{ path('app_author_index') }}" class="btn btn-outline-primary btn-sm">Автори</a>
+    <a href="{{ path('app_book_index') }}" class="btn btn-outline-primary btn-sm">Книги</a>
+    <a href="{{ path('app_reader_index') }}" class="btn btn-outline-primary btn-sm">Читачі</a>
+    <a href="{{ path('app_loan_index') }}" class="btn btn-outline-primary btn-sm">Позики</a>
+    <a href="{{ path('app_returning_index') }}" class="btn btn-outline-primary btn-sm active">Повернення</a>
+</div>
 
-{% block title %}Returning index{% endblock %}
+<h1>Повернення</h1>
 
-{% block body %}
-    <h1>Returning index</h1>
+<a href="{{ path('app_returning_new') }}" class="btn btn-primary mb-3">+ Нова повернення</a>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>ReturnDate</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
+<form method="get" class="mb-3">
+    <label>Фільтр за ID видачі:</label>
+    <input type="text" name="loan" value="{{ filters.loan ?? '' }}" />
+
+    <label>Кількість на сторінці:</label>
+    <input type="number" name="itemsPerPage" value="{{ limit }}" min="1" />
+
+    <button type="submit">Фільтрувати</button>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Видача (ID)</th>
+            <th>Дата повернення</th>
+            <th>Дії</th>
+        </tr>
+    </thead>
+    <tbody>
         {% for returning in returnings %}
             <tr>
                 <td>{{ returning.id }}</td>
-                <td>{{ returning.returnDate ? returning.returnDate|date('Y-m-d') : '' }}</td>
+                <td>{{ returning.loan.id }}</td>
+                <td>{{ returning.returnedAt ? returning.returnedAt|date('Y-m-d') : '—' }}</td>
                 <td>
-                    <a href="{{ path('app_returning_show', {'id': returning.id}) }}">show</a>
-                    <a href="{{ path('app_returning_edit', {'id': returning.id}) }}">edit</a>
+                    <a href="{{ path('app_returning_edit', {id: returning.id}) }}">Редагувати</a>
+                    <form method="post" action="{{ path('app_returning_delete', {id: returning.id}) }}"
+                          style="display:inline;" onsubmit="return confirm('Ви впевнені?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ returning.id) }}">
+                        <button class="btn btn-sm btn-danger">Видалити</button>
+                    </form>
                 </td>
             </tr>
         {% else %}
-            <tr>
-                <td colspan="3">no records found</td>
-            </tr>
+            <tr><td colspan="4">Записів не знайдено.</td></tr>
         {% endfor %}
-        </tbody>
-    </table>
+    </tbody>
+</table>
 
-    <a href="{{ path('app_returning_new') }}">Create new</a>
-{% endblock %}
+<div class="pagination mt-3">
+    {% set queryParams = app.request.query.all %}
+    {% if page > 1 %}
+        <a href="?{{ queryParams|merge({'page': page - 1})|url_encode }}">← Попередня</a>
+    {% endif %}
+    <span>Сторінка {{ page }}</span>
+    {% if returnings|length == limit %}
+        <a href="?{{ queryParams|merge({'page': page + 1})|url_encode }}">Наступна →</a>
+    {% endif %}
+</div>
